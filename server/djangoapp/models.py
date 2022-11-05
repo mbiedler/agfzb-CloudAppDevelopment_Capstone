@@ -1,7 +1,5 @@
 from django.db import models
 from django.utils.timezone import now
-
-
 # Create your models here.
 
 # <HINT> Create a Car Make model `class CarMake(models.Model)`:
@@ -9,6 +7,19 @@ from django.utils.timezone import now
 # - Description
 # - Any other fields you would like to include in car make model
 # - __str__ method to print a car make object
+"""
+class CarMake(models.Model):
+    name = models.CharField(max_length=200, default="title")
+    description = models.CharField(max_length=200, default="title")
+    #course = models.ForeignKey(Course, null=True, on_delete=models.CASCADE)
+    content = models.TextField()
+    
+    # Create a toString method for object string representation
+    def __str__(self):
+        return "First name: " + self.first_name + ", " + \
+               "Last name: " + self.last_name + ", " + \
+               "Is full time: " + str(self.full_time) + ", " + \
+               "Total Learners: " + str(self.total_learners)
 
 
 # <HINT> Create a Car Model model `class CarModel(models.Model):`:
@@ -20,8 +31,94 @@ from django.utils.timezone import now
 # - Any other fields you would like to include in car model
 # - __str__ method to print a car make object
 
+class CarModel(models.Model):
+    SEDAN = 'sedan'
+    SUV = 'suv'
+    WAGON = 'wagon'
+    PICKUP_TRUCK = 'pickup_truck'
+    COUPE = 'coupe'
+    CONVERTIBLE = 'convertible'
+    
+    CARTYPE_CHOICES = [
+        (SEDAN, 'Sedan'),
+        (SUV, 'SUV'),
+        (WAGON, 'Wagon'),
+        (PICKUP_TRUCK, 'Pickup Truck'),
+        (COUPE, 'Coupe'),
+        (CONVERTIBLE,'Convertible')
+    ]
+    # Occupation Char field with defined enumeration choices
+    cartype = models.CharField(
+        null=False,
+        max_length=20,
+        choices=CARTYPE_CHOICES,
+        default=SEDAN
+    )
+    name = models.CharField(max_length=200, default="title")
+    description = models.CharField(max_length=200, default="title")
+    carmake = models.ForeignKey(CarMake, null=True, on_delete=models.CASCADE)
+    year = models.ForeignKey(CarMake, null=True, on_delete=models.CASCADE)
+
+    # Create a toString method for object string representation
+    def __str__(self):
+        return "First name: " + self.first_name + ", " + \
+               "Last name: " + self.last_name + ", " + \
+               "Is full time: " + str(self.full_time) + ", " + \
+               "Total Learners: " + str(self.total_learners)
+
+
+
+"""
+# <HINT> Create a plain Python class `DealerReview` to hold review data
+class DealerReview:
+    def __init__(self, car_year, car_model, car_make, id, sentiment, purchase_date, review, purchase, name, dealership):
+        # Review Car Year
+        self.car_year = car_year
+        # Review Car Model
+        self.car_model= car_model
+        # Review Car Mak
+        self.car_make= car_make
+        # Dealer id
+        self.id = id
+        # Sentiment
+        self.sentiment = sentiment
+        # purchase_date
+        self.purchase_date = purchase_date
+        # Review text
+        self.review = review
+        # Purchase yes/no
+        self.purchase = purchase
+        # Reviewer Name
+        self.name= name
+        #Dealership id
+        self.dealership=dealership
+
+    def __str__(self):
+        return "Dealer name: " + self.full_name
 
 # <HINT> Create a plain Python class `CarDealer` to hold dealer data
 
+class CarDealer:
 
-# <HINT> Create a plain Python class `DealerReview` to hold review data
+    def __init__(self, address, city, full_name, id, lat, long, short_name, st, zip):
+        # Dealer address
+        self.address = address
+        # Dealer city
+        self.city = city
+        # Dealer Full Name
+        self.full_name = full_name
+        # Dealer id
+        self.id = id
+        # Location lat
+        self.lat = lat
+        # Location long
+        self.long = long
+        # Dealer short name
+        self.short_name = short_name
+        # Dealer state
+        self.st = st
+        # Dealer zip
+        self.zip = zip
+
+    def __str__(self):
+        return "Dealer name: " + self.full_name

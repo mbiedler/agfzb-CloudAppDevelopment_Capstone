@@ -3,50 +3,523 @@
 <head>
     <meta charset="UTF-8">
     <title>Dealership Review</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  
+    <link href="https://cdn.lineicons.com/3.0/lineicons.css" rel="stylesheet">
+          <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <link href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css" rel="stylesheet">
+
     <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
-
-</head>
+    <link rel="stylesheet" type="text/css" href="extensions/filter-control/bootstrap-table-filter-control.css">
+    <script src="extensions/filter-control/bootstrap-table-filter-control.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    {% if user.is_authenticated %}
+    <script>var loggedin=true</script>
+    {% else %}
+    <script>var loggedin=false</script>
+    {% endif %}
+  <style>
+       #table {
+           
+            text-align: left;
+            border-collapse: collapse;
+            color: #2E2E2E;
+            border: #A4A4A4;
+        }
+  
+        #table tr:hover {
+            background-color: #F2F2F2;
+        }
+  
+        #table .hidden_row {
+            display: none;
+        }
+    
+    </style>
+  </head>
 
     <body>
 
     <!--Add a nav bar here -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <ul class="navbar-nav">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="about">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="contact">Contact</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Dropdown link
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <a class="dropdown-item" href="#">Action</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <a class="dropdown-item" href="#">Something else here</a>
-              </div>
-            </li>
-          </ul>
+      <div class="row justify-content-between">
+        <div class="col-2">
+            <a class="navbar-brand" href="#">Dealership Reviews</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+              <ul class="navbar-nav">
+                <li class="nav-item active">
+                  <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="about">About</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="contact">Contact</a>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Dropdown link
+                  </a>
+                  <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                  </div>
+                </li>
+              </ul>
+            </div>
         </div>
-      </nav>
-    <!--Add a dealer table here -->
+        {% if user.is_authenticated %}
+        <div class="col-2">
+              <span>Welcome, {% if user.first_name != ""%}{{user.first_name}}{% else %}{{user.username}}{% endif %} </span>
+              <a href="{% url 'djangoapp:logout' %}">Logout</a>
 
+        </div>
+          
+        {% else %}
+        <div class="col-2">
+            <form action="{% url 'djangoapp:login' %}"  method="post" class="form-inline">
+              {% csrf_token %}
+              <div class="form-group">
+                <input name="username" type="text" class="form-control" placeholder="Enter User Name">
+              </div>
+              <div class="form-group">
+                <input name="psw" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+              <a class="nav-link" href="registration_request">Sign Up</a>
+              
+            </form>
+        </div>
+        {% endif %}
+      </div>
+    </nav>
+    <!--Add a dealer table here -->
+    <h2>Filterable Table</h2>
+    <p>Type something in the input field to search the table for first names, last names or emails:</p>  
+    <input class="form-control" id="myInput" type="text" placeholder="Search..">
+    <br>
+    <table class="table" id="table"  data-filter-control="true">
+      <thead>
+          <tr>
+
+              <th data-field="name"  data-filter-control="select">Full Name</th>
+              <th data-field="name"  data-filter-control="select">Address</th>
+              <th data-field="name"  data-filter-control="select">City</th>
+              <th data-field="name"  data-filter-control="select">State</th>
+              <th data-field="name"  data-filter-control="select">Zip</th>
+              <th data-field="name"  data-filter-control="select">Reviews</th>
+              
+          </tr>
+      </thead>
+      <tbody>
+          {% for dealer in dealerships %}
+              <tr>
+                  <td>{{dealer.full_name}}</td>
+                  <td>{{dealer.address}}</td>
+                  <td>{{dealer.city}}</td>
+                  <td>{{dealer.st}}</td>
+                  <td>{{dealer.zip}}</td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+  <p id="scrollmessage">Scroll down for more data...</p>
+
+  <!-- Modal For Show Reviews -->
+<div class="modal fade" id="showReviewsModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="showReviewsModalTitle">Reviews For</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="review-modal-body" class="d-flex justify-content-center modal-body" onchange="getNLU()">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <!--------- <button type="button" class="btn btn-primary">Save changes</button> --->
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal For Add Reviews -->
+<form id="addReviewForm">
+    <div class="modal fade" id="addReviewModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+           <h5 class="modal-title" id="addReviewLongTitle"></h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+             </button>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Full Name:</label>
+                <input type="text" id="name" name="name"><br>
+            </div>
+            
+            <div class="form-group">
+              <label for="exampleFormControlTextarea1">Enter Review Content - minimum 5 words</label>
+              <textarea name="review" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+            </div>
+            <div class="form-check">
+              <input name="purchase" class="form-check-input" type="checkbox" id="purchase_check">
+              <label class="form-check-label" for="purchase_check">
+                  Did you make a purchase?
+              </label>
+            </div> 
+            <div id="purchase_group" style="display: none;">
+              <div class="form-group">
+                <label for="start">Purchase date:</label>
+                <input type="date" id="purchase_date" name="purchase_date">
+              </div>
+              <label for="car">Car Purchased:</label>
+              <select name="car" id="car" class="form-select" required>
+                  <option selected value="New"></option>
+              </select>
+            </div> 
+          </div>
+          <div class="modal-footer">
+              <input type="hidden" name="dealership" value="">
+              <span id="review_message"></span>
+              <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</form>
+  <script>
+    var mydealerships=[]
+    var skip=0
+    const limit=10;
+    var lastrequest=0;
+    var tablecolnum=5;
+    var myreviews='';
+    var form = document.getElementById("addReviewForm");
+    form.addEventListener('submit', formAddReviewSubmit);
+    function appendReviews(data){
+      $('#review-modal-body').html('')
+      let str=''
+      $.each(data, function(i){
+        //console.log(this)
+        //console.log($('#dealer_full_name_'+this.dealership).html())
+        
+        str+=`<div id=\"review_id_${this._id}\" class=\"mx-1 card\" style=\"width: 18rem;\">`
+        str+='<div class=\"card-body\">'
+        str+=`<h5 id=\"review_title_${this._id}\" class=\"card-title\"><i id=\"review_face_${this._id}\" class="mx-1"></i>${this.name}</h5>`
+       
+        if (this.purchase=="true"){
+          str+='<p class=\"card-text\">Verified Purchase? <i class="text-success lni lni-checkmark-circle"></i></i></p>'
+          str+='<p class=\"card-text\">Purchase Details: '+this.car_make+'-'+this.car_model+'-'+this.car_year+'</p>'
+          str+='<p class=\"card-text\">Purchase Date: '+this.purchase_date+'</p>'
+        } else {
+          str+='<p class=\"card-text\">Verified Purchase? <i class="text-danger lni lni-cross-circle"></i></p>'  
+          str+='<p class=\"card-text\"></p><p class=\"card-text\"></p>'
+        }
+        
+        str+='<blockquote class=\"bg-light card-text\">'+this.review +'</blockquote>'
+        str+=`<small id="nlu_message_${this._id}"></small>`
+        //str+='<a href=\"#\" class=\"btn btn-primary\">Go somewhere</a>'
+        str+='</div>'
+        str+='</div>'
+      } ) 
+      //<i class="lni lni-sad"></i>
+      //<i class="lni lni-smile"></i>
+      //<i class="lni lni-speechless"></i>
+      str=(str=='')?'No Reviews':str
+      $('#review-modal-body').html(str)    
+    }
+    function appendReviewsNLU(sentiment,reviewid){
+      if (sentiment['error']){
+        $(`#nlu_message_${reviewid}`).html(`Sentiment: ${sentiment.error}`)
+      } else {
+        sentiment=sentiment.keywords[0].sentiment.label
+        $(`#nlu_message_${reviewid}`).html(`Sentiment: ${sentiment}`)
+
+      //<i class="lni lni-sad"></i>
+      //<i class="lni lni-smile"></i>
+      //<i class="lni lni-speechless"></i>
+      $('#review_face_'+reviewid).addClass('lni');
+      //console.log(sentiment);
+      //console.log(reviewid);
+      //console.log($('#review_face_'+reviewid).attr('class'));
+      switch(sentiment) {
+        case "positive":
+          $('#review_face_'+reviewid).addClass('lni-smile')
+          $('#review_title_'+reviewid).addClass('bg-success')
+          break;
+        case "negative":
+          $('#review_face_'+reviewid).addClass('lni-sad')
+          $('#review_title_'+reviewid).addClass('bg-danger')
+          break;
+        default:
+          $('#review_face_'+reviewid).addClass('lni-speechless')
+          $('#review_title_'+reviewid).addClass('bg-warning')
+      }
+    }
+    }
+    function addReviewForm(data){
+      document.getElementById("addReviewForm").reset();
+      $("#review_message").html(``);
+      $("#purchase_group").hide();
+      
+      console.log($('input[name="dealership"]'))
+      $('input[name="dealership"]').attr('value',data)
+      //Put the dealer name in the title
+      let dealership_name=$('#dealer_full_name_'+data)[0].innerText
+      console.log($('#dealer_full_name_'+data))
+      console.log(dealership_name)
+      $('#addReviewLongTitle').html(`Add review for ${dealership_name}`)
+      //get a list of the types of cars that the dealership sells
+      //    getDealerCars()
+      
+
+    }
+
+    function appendTable(data){
+      
+      let str=''
+      $.each(data, function(i){
+        //console.log(this)
+        str +='<tr id=dealer_id_'+this.doc.id + '>';
+        
+       // str +='<tr id=dealer_id_'+this.doc.id + ' onclick=\"showHideRow(\'dealer_hidden_id_' + this.doc.id + '\');\"">';
+        str += '<td id=dealer_full_name_'+this.doc.id+'>' + this.doc.full_name + '</td>'
+        str += '<td>' + this.doc.address + '</td>'
+        str += '<td>' + this.doc.city + '</td>'
+        str += '<td>' + this.doc.state + '</td>'
+        str += '<td>' + this.doc.zip + '</td>'
+        str += '<td><button onclick=\"getReviews(' + this.doc.id + ')\" type=\"button\" class=\"mx-1 btn btn-primary\" data-toggle=\"modal\" data-target=\"#showReviewsModalLong\"><i class="lni lni-comments"></i></button>'
+        str+=loggedin?'<button onclick=\"addReviewForm(' + this.doc.id + ')\" type=\"button\" class=\"mx-1 btn btn-primary\" data-toggle=\"modal\" data-target=\"#addReviewModalLong\"><i class=\"lni lni-circle-plus\"></i></button>':'';
+        str+='</td>';     
+        str +='</tr>';
+      });
+      $('#table').append(str);
+      //console.log(str)
+    }
+    function getNLU(data){
+            data.forEach((review)=>{
+              let result=requestNLU(review)
+              console.log(result)
+            }) 
+    }
+    function requestNLU(data){
+      console.log(data._id)
+      $.ajax({
+                   url:'ajaxNLU',
+                   type: 'get',
+                   data:{review:data.review,dealership:data.dealership,reviewid:data._id},
+                   success: function(response){
+                    console.log(response)
+                  
+                   appendReviewsNLU(response,response.reviewid)
+                   }                  
+              });
+    }
+    function getReviews(data){
+      $("#review_message").html(``);
+      let dealership_name=$('#dealer_full_name_'+data)[0].innerText
+      //console.log($('#dealer_full_name_'+data))
+      //console.log(dealership_name)
+      $('#showReviewsModalTitle').html('Reviews for '+dealership_name)
+                    $.ajax({
+                   url:'ajaxReviews',
+                   type: 'get',
+                   data:{dealership:data},
+                   
+                   success: function(response){
+                    myreviews=response
+                    //myreviews=JSON.parse(response)
+                    console.log(myreviews)
+                    //myreviews=myreviews.replaceAll(/(True\b)/gmi,"true")
+                    //myreviews=myreviews.replaceAll(/(False\b)/gmi,"false")
+                    //console.log(myreviews)
+                    //myreviews = JSON.parse(myreviews.replaceAll(`'`,`"`)) 
+                    console.log("get show reviews")
+                    appendReviews(myreviews)
+                    console.log("get sentiemt")
+                    getNLU(myreviews)
+                    
+                   }
+                  
+              });
+         
+    }
+    async function getReviews2(data){
+      $("#review_message").html(``);
+      let dealership_name=$('#dealer_full_name_'+data)[0].innerText
+      $('#showReviewsModalTitle').html('Reviews for '+dealership_name)
+      let query=new URLSearchParams({dealership:data})
+      console.log('ajaxReviews?' + new URLSearchParams({dealership:data}).toString())
+
+      myreviews= await fetch("ajaxReviews?" + new URLSearchParams({dealership:data})).then(async response => {
+            console.log(1)
+            const isJson = response.headers.get('content-type')?.includes('application/json');
+            const thisresponse = isJson && await response.json();
+            console.log(thisresponse)
+            console.log(2)
+            if (!response.ok) {
+            // get error message from body or default to response status
+            console.log(3)
+            const error = (thisresponse && thisresponse.message) || response.status;
+            console.log(4)
+            return Promise.reject(error);
+          }
+          return thisresponse
+        }).catch(error => {
+          $("#review_message").html(`Error: ${error}`);
+        console.error('There was an error!', error);
+        });
+        console.log(myreviews)
+        appendReviews(myreviews)
+        getNLU(myreviews)
+                  
+         
+    }
+    var myresults
+    function fetchDealerData(){
+        if ((Date.now()-lastrequest)>3){
+                      $.ajax({
+                   url:'ajaxDealerships',
+                   type: 'get',
+                   //data: {start:start,rowperpage: rowperpage},
+                   data:{skip:skip},
+                   success: function(response){
+                    //results = JSON.parse(response.replaceAll(`'`,`"`))
+                    //console.log(response)
+                    //results=JSON.parse(response)
+                    
+                    results=response
+
+                    mydealerships.concat(results)
+                    
+                    skip+=results.length
+                    lastrequest=Date.now();
+                    if (results.length>0){
+                      appendTable(results)
+                      $('#scrollmessage').html('Scroll down to load more data...')
+                      console.log("still more data")
+                    } else {
+                      $('#scrollmessage').html('Complete table has been retreived.')
+                      console.log("no more data")
+                    }
+                        // Add
+                        
+                        //$(".post:last").after(response).show().fadeIn("slow");
+
+                        // Check if the page has enough content or not. If not then fetch records
+                        checkWindowSize();
+                   }
+              });
+         }
+    }
+    function getDealerCars(data){
+          $.ajax({
+              url:'ajaxDealerCars',
+              type: 'get',
+                   //data: {start:start,rowperpage: rowperpage},
+              data:{dealership:data},
+                   success: function(response){
+                    console.log(results)
+                    if (results.length>0){
+                      appendForm(results)
+                      
+                    } 
+                   }
+              });
+    }
+    async function formAddReviewSubmit(mydata){
+      const form = event.currentTarget;
+      let data = new FormData(form);
+      event.preventDefault();
+      for (const pair of data.entries()) {
+        console.log(`${pair[0]}, ${pair[1]}`);
+      }
+        data.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]')[0].value);
+      myOptions={
+        method: 'POST',
+        body: data,
+        credentials: 'same-origin'
+      }
+      myres= await fetch("addReview", myOptions).then(async response => {
+            const isJson = response.headers.get('content-type')?.includes('application/json');
+            const thisresponse = isJson && await response.json();
+          if (!response.ok) {
+            // get error message from body or default to response status
+            const error = (thisresponse && thisresponse.message) || response.status;
+            return Promise.reject(error);
+          }
+          return thisresponse
+        }).catch(error => {
+          $("#review_message").html(`Error: ${error}`);
+        console.error('There was an error!', error);
+        });
+        console.log(myres)
+        $("#review_message").html(myres.message)
+    }
+    
+    </script>
     </body>
 
+    <script>
+      $(document).on('touchmove', onScroll); // for mobile
+      $(document).ready(function(){
+        $("#myInput").on("keyup", function() {
+          var value = $(this).val().toLowerCase();
+          $("#table tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+          });
+
+        });
+        $("#purchase_check").click(function() { 
+          // assumes element with id='button'
+          $("#purchase_group").toggle();
+        });
+        //console.log($('input[name="csrfmiddlewaretoken"]'))
+        //console.log($('input[name="csrfmiddlewaretoken"]')[0].value )
+      });
+      //$('input[name="csrfmiddlewaretoken"]')   // Matches exactly 'csrfmiddlewaretoken'
+      checkWindowSize();
+    // Check if the page has enough content or not. If not then fetch records
+    function onScroll(){
+         if($(window).scrollTop() > $(document).height() - $(window).height()-100) {
+
+               fetchDealerData(); 
+         }
+    }
+    function checkWindowSize(){
+        if($(window).height() >= $(document).height()){
+              // Fetch records
+              //fetchDealerData();
+        }
+    }
+    $(window).scroll(function(){
+
+var position = $(window).scrollTop();
+var bottom = $(document).height() - $(window).height();
+
+if( position == bottom ){
+      fetchDealerData(); 
+}
+
+});
+window.onload = (event) => {
+fetchDealerData()
+// console.log('page is fully loaded');
+};
+      </script>
+      
+      
 </html>
