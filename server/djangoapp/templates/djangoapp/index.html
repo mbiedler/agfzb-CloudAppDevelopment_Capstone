@@ -187,7 +187,7 @@
               </div>
               <label for="car">Car Purchased:</label>
               <select name="car" id="car" class="form-select" required>
-                  <option selected value="New"></option>
+                  
               </select>
             </div> 
           </div>
@@ -274,7 +274,7 @@
       document.getElementById("addReviewForm").reset();
       $("#review_message").html(``);
       $("#purchase_group").hide();
-      
+      getCarList(data)
       console.log($('input[name="dealership"]'))
       $('input[name="dealership"]').attr('value',data)
       //Put the dealer name in the title
@@ -425,16 +425,24 @@
               });
          }
     }
-    function getDealerCars(data){
+    
+    function getCarList(data){
+      console.log("fetching car list....")
           $.ajax({
-              url:'ajaxDealerCars',
+              url:'ajaxCarList',
               type: 'get',
                    //data: {start:start,rowperpage: rowperpage},
-              data:{dealership:data},
+              data:{},
                    success: function(response){
-                    console.log(results)
-                    if (results.length>0){
-                      appendForm(results)
+                    console.log(response)
+                    console.log("that was your car list")
+                    if (response.length>0){
+                      $('#car').html('')
+                      response.forEach((car)=>{
+                        console.log(car.carmake_id)
+                        let cartext=`${car.carmake_id}-${car.name}-${car.year}`
+                        $('#car').append(`<option selected value="${cartext}">${cartext}</option>`)
+                      })
                       
                     } 
                    }

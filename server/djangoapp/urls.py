@@ -29,10 +29,12 @@ urlpatterns = [
     path(route='ajaxReviews', view=views.ajaxReviews, name='ajaxReviews'),
     path(route='ajaxNLU', view=views.ajaxNLU, name='ajaxNLU'),
     path(route='ajaxDealerCars', view=views.ajaxDealerCars, name='ajaxDealerCars'),
+    path(route='ajaxCarList', view=views.ajaxCarList, name='ajaxCarList'),
     # path for dealer reviews view
     path(route='get_dealer_details', view=views.get_dealer_details, name='get_dealer_details'),
-
+    
     # path for add a review view
     path(route='addReview', view=views.addReview, name='addReview')
+    
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

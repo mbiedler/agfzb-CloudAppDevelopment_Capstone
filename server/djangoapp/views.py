@@ -10,6 +10,7 @@ from datetime import datetime
 from .restapis import get_query_from_cf,post_request
 import logging
 import json
+from .models import CarModel
 from requests.auth import HTTPBasicAuth
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -118,6 +119,7 @@ def get_dealerships(request):
         # Concat all dealer's short name
         # Return a list of dealer short name
         #context={'dealerships':dealerships}
+        
         return render(request, 'djangoapp/index.html')
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
@@ -229,3 +231,6 @@ def addReview(request):
         myres={'message':'User is not Authorized'}
     
     return HttpResponse(json.dumps(myres), content_type="application/json")
+def ajaxCarList(request):
+    print(json.dumps(list((CarModel.objects.values()))))
+    return HttpResponse(json.dumps(list((CarModel.objects.values()))), content_type="application/json")

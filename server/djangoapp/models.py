@@ -1,5 +1,8 @@
 from django.db import models
+import datetime
+
 from django.utils.timezone import now
+from django.core.validators import MaxValueValidator, MinValueValidator
 # Create your models here.
 
 # <HINT> Create a Car Make model `class CarMake(models.Model)`:
@@ -7,20 +10,16 @@ from django.utils.timezone import now
 # - Description
 # - Any other fields you would like to include in car make model
 # - __str__ method to print a car make object
-"""
+
 class CarMake(models.Model):
-    name = models.CharField(max_length=200, default="title")
+    name = models.CharField(max_length=30, default="title",unique=True)
     description = models.CharField(max_length=200, default="title")
-    #course = models.ForeignKey(Course, null=True, on_delete=models.CASCADE)
+
     content = models.TextField()
     
     # Create a toString method for object string representation
     def __str__(self):
-        return "First name: " + self.first_name + ", " + \
-               "Last name: " + self.last_name + ", " + \
-               "Is full time: " + str(self.full_time) + ", " + \
-               "Total Learners: " + str(self.total_learners)
-
+        return self.name
 
 # <HINT> Create a Car Model model `class CarModel(models.Model):`:
 # - Many-To-One relationship to Car Make model (One Car Make has many Car Models, using ForeignKey field)
@@ -30,7 +29,13 @@ class CarMake(models.Model):
 # - Year (DateField)
 # - Any other fields you would like to include in car model
 # - __str__ method to print a car make object
+def current_year():
+    return datetime.date.today().year
 
+
+def max_value_current_year(value):
+    return MaxValueValidator(current_year())(value)
+    
 class CarModel(models.Model):
     SEDAN = 'sedan'
     SUV = 'suv'
@@ -54,21 +59,19 @@ class CarModel(models.Model):
         choices=CARTYPE_CHOICES,
         default=SEDAN
     )
-    name = models.CharField(max_length=200, default="title")
-    description = models.CharField(max_length=200, default="title")
-    carmake = models.ForeignKey(CarMake, null=True, on_delete=models.CASCADE)
-    year = models.ForeignKey(CarMake, null=True, on_delete=models.CASCADE)
 
+    
+    name = models.CharField(max_length=20, default="title")
+    description = models.CharField(max_length=200, default="title")
+    carmake = models.ForeignKey(CarMake, to_field='name', null=True, on_delete=models.CASCADE)
+    year = models.PositiveIntegerField(default=current_year(), validators=[MinValueValidator(1984), max_value_current_year])
     # Create a toString method for object string representation
     def __str__(self):
-        return "First name: " + self.first_name + ", " + \
-               "Last name: " + self.last_name + ", " + \
-               "Is full time: " + str(self.full_time) + ", " + \
-               "Total Learners: " + str(self.total_learners)
+        return "Car model name: " + self.name
 
 
 
-"""
+
 # <HINT> Create a plain Python class `DealerReview` to hold review data
 class DealerReview:
     def __init__(self, car_year, car_model, car_make, id, sentiment, purchase_date, review, purchase, name, dealership):
